@@ -36,6 +36,8 @@
 lockfile='/var/run/WiFi_Check.pid'
 # Which Interface do you want to check/fix
 wlan='wlan0'
+# temporary locale to use for ifconfig output
+LC_ALL=C
 ##################################################################
 echo
 echo "Starting WiFi check for $wlan"
@@ -62,19 +64,19 @@ echo $$ > $lockfile
 
 # We can perform check
 echo "Performing Network check for $wlan"
-if ifconfig $wlan | grep -q "inet addr:" ; then
+if /sbin/ifconfig $wlan | grep -q "inet addr:" ; then
     echo "Network is Okay"
 else
     echo "Network connection down! Attempting reconnection."
-    ifdown $wlan
+    /sbin/ifdown $wlan
     sleep 5
-    ifup --force $wlan
-    ifconfig $wlan | grep "inet addr"
+    /sbin/ifup --force $wlan
+    /sbin/ifconfig $wlan | grep "inet addr:"
 fi
 
 echo 
 echo "Current Setting:"
-ifconfig $wlan | grep "inet addr:"
+/sbin/ifconfig $wlan | grep "inet addr:"
 echo
  
 # Check is complete, Remove Lock file and exit

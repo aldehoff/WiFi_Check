@@ -39,10 +39,6 @@ wlan='wlan0'
 # temporary locale to use for ifconfig output
 LC_ALL=C
 ##################################################################
-echo
-echo "Starting WiFi check for $wlan"
-date
-echo 
 
 # Check to see if there is a lock file
 if [ -e $lockfile ]; then
@@ -50,37 +46,25 @@ if [ -e $lockfile ]; then
     pid=`cat $lockfile`
     if kill -0 &>1 > /dev/null $pid; then
         # Still Valid... lets let it be...
-        #echo "Process still running, Lockfile valid"
         exit 1
     else
         # Old Lockfile, Remove it
-        #echo "Old lockfile, Removing Lockfile"
         rm $lockfile
     fi
 fi
 # If we get here, set a lock file using our current PID#
-#echo "Setting Lockfile"
 echo $$ > $lockfile
 
 # We can perform check
-echo "Performing Network check for $wlan"
-if /sbin/ifconfig $wlan | grep -q "inet addr:" ; then
-    echo "Network is Okay"
-else
+if ! /sbin/ifconfig $wlan | grep -q "inet addr:" ; then
     echo "Network connection down! Attempting reconnection."
     /sbin/ifdown $wlan
     sleep 5
     /sbin/ifup --force $wlan
     /sbin/ifconfig $wlan | grep "inet addr:"
 fi
-
-echo 
-echo "Current Setting:"
-/sbin/ifconfig $wlan | grep "inet addr:"
-echo
  
 # Check is complete, Remove Lock file and exit
-#echo "process is complete, removing lockfile"
 rm $lockfile
 exit 0
 
